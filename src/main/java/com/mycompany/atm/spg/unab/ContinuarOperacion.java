@@ -37,17 +37,21 @@ public class ContinuarOperacion extends javax.swing.JFrame {
     }
 
     private void btnNoActionPerformed(java.awt.event.ActionEvent evt) {
-        FlujoATM.getInstance().cerrarSesion();
-        UtilidadesUI.abrirVentana(this, Inicio::new);
+        UtilidadesUI.ejecutarConToqueOpcion(() -> {
+            FlujoATM.getInstance().cerrarSesion();
+            UtilidadesUI.abrirVentana(this, Inicio::new);
+        });
     }
 
     private void btnSiActionPerformed(java.awt.event.ActionEvent evt) {
-        if (!FlujoATM.getInstance().sesionActiva()) {
-            JOptionPane.showMessageDialog(this, "Sesión no válida. Inicie de nuevo.", "Sesión", JOptionPane.WARNING_MESSAGE);
-            UtilidadesUI.abrirVentana(this, Inicio::new);
-            return;
-        }
-        UtilidadesUI.abrirVentana(this, MenuTransacciones::new);
+        UtilidadesUI.ejecutarConToqueOpcion(() -> {
+            if (!FlujoATM.getInstance().sesionActiva()) {
+                JOptionPane.showMessageDialog(this, "Sesión no válida. Inicie de nuevo.", "Sesión", JOptionPane.WARNING_MESSAGE);
+                UtilidadesUI.abrirVentana(this, Inicio::new);
+                return;
+            }
+            UtilidadesUI.abrirVentana(this, MenuTransacciones::new);
+        });
     }
 
     public static void main(String[] args) {

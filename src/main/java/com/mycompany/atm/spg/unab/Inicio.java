@@ -54,16 +54,18 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     private void btnContinuarActionPerformed(java.awt.event.ActionEvent evt) {
-        boolean pinValido = FlujoATM.getInstance().validarPin(password.getPassword());
-        if (!pinValido) {
-            JOptionPane.showMessageDialog(this,
-                    "PIN inválido. Ingrese 4 dígitos.",
-                    "Validación PIN",
-                    JOptionPane.WARNING_MESSAGE);
-            password.setText("");
-            return;
-        }
-        UtilidadesUI.abrirVentana(this, ContinuarOperacion::new);
+        UtilidadesUI.ejecutarConToqueOpcion(() -> {
+            boolean pinValido = FlujoATM.getInstance().validarPin(password.getPassword());
+            if (!pinValido) {
+                JOptionPane.showMessageDialog(this,
+                        "PIN inválido. Ingrese 4 dígitos.",
+                        "Validación PIN",
+                        JOptionPane.WARNING_MESSAGE);
+                password.setText("");
+                return;
+            }
+            UtilidadesUI.abrirVentana(this, ContinuarOperacion::new);
+        });
     }
 
     public static void main(String[] args) {

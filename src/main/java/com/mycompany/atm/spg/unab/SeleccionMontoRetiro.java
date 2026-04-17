@@ -48,7 +48,7 @@ public class SeleccionMontoRetiro extends javax.swing.JFrame {
 
     private JButton crearBotonMonto(String etiqueta, int monto) {
         JButton button = UtilidadesUI.crearBotonTransparente(etiqueta, 48);
-        button.addActionListener(evt -> irAConfirmacion(monto));
+        button.addActionListener(evt -> UtilidadesUI.ejecutarConToqueOpcion(() -> irAConfirmacion(monto)));
         return button;
     }
 
@@ -58,23 +58,25 @@ public class SeleccionMontoRetiro extends javax.swing.JFrame {
     }
 
     private void btnOtraCantidadActionPerformed(java.awt.event.ActionEvent evt) {
-        String entrada = JOptionPane.showInputDialog(this, "Ingrese el monto a retirar:", "Monto", JOptionPane.QUESTION_MESSAGE);
-        if (entrada == null) {
-            return;
-        }
+        UtilidadesUI.ejecutarConToqueOpcion(() -> {
+            String entrada = JOptionPane.showInputDialog(this, "Ingrese el monto a retirar:", "Monto", JOptionPane.QUESTION_MESSAGE);
+            if (entrada == null) {
+                return;
+            }
 
-        String limpio = entrada.trim().replace("$", "");
-        if (!limpio.matches("\\d+")) {
-            JOptionPane.showMessageDialog(this, "Ingrese solo números.", "Monto", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+            String limpio = entrada.trim().replace("$", "");
+            if (!limpio.matches("\\d+")) {
+                JOptionPane.showMessageDialog(this, "Ingrese solo números.", "Monto", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
-        int monto = Integer.parseInt(limpio);
-        if (monto <= 0) {
-            JOptionPane.showMessageDialog(this, "Monto inválido.", "Monto", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        irAConfirmacion(monto);
+            int monto = Integer.parseInt(limpio);
+            if (monto <= 0) {
+                JOptionPane.showMessageDialog(this, "Monto inválido.", "Monto", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            irAConfirmacion(monto);
+        });
     }
 
     public static void main(String[] args) {
