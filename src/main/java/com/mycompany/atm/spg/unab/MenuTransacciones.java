@@ -33,8 +33,8 @@ public class MenuTransacciones extends javax.swing.JFrame {
         JButton btnSalir = UtilidadesUI.crearBotonTransparente("SALIR", 48);
 
         btnRetiros.addActionListener(this::btnRetirosActionPerformed);
-        btnHistorial.addActionListener(evt -> mostrarHistorial());
-        btnConsultarSaldo.addActionListener(evt -> consultarSaldoActual());
+        btnHistorial.addActionListener(evt -> UtilidadesUI.ejecutarConToqueOpcion(this::mostrarHistorial));
+        btnConsultarSaldo.addActionListener(evt -> UtilidadesUI.ejecutarConToqueOpcion(this::consultarSaldoActual));
         btnSalir.addActionListener(this::btnSalirActionPerformed);
 
         panel.add(titulo, new RestriccionesRelativas(0.292, 0.287, 0.417, 0.074));
@@ -85,12 +85,14 @@ public class MenuTransacciones extends javax.swing.JFrame {
     }
 
     private void btnRetirosActionPerformed(java.awt.event.ActionEvent evt) {
-        UtilidadesUI.abrirVentana(this, SeleccionRetiro::new);
+        UtilidadesUI.ejecutarConToqueOpcion(() -> UtilidadesUI.abrirVentana(this, SeleccionRetiro::new));
     }
 
     private void btnSalirActionPerformed(java.awt.event.ActionEvent evt) {
-        FlujoATM.getInstance().cerrarSesion();
-        UtilidadesUI.abrirVentana(this, Inicio::new);
+        UtilidadesUI.ejecutarConToqueOpcion(() -> {
+            FlujoATM.getInstance().cerrarSesion();
+            UtilidadesUI.abrirVentana(this, Inicio::new);
+        });
     }
 
     public static void main(String[] args) {

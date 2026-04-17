@@ -36,12 +36,14 @@ public class SeleccionRetiro extends javax.swing.JFrame {
     }
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {
-        FlujoATM.getInstance().cerrarSesion();
-        UtilidadesUI.abrirVentana(this, Inicio::new);
+        UtilidadesUI.ejecutarConToqueOpcion(() -> {
+            FlujoATM.getInstance().cerrarSesion();
+            UtilidadesUI.abrirVentana(this, Inicio::new);
+        });
     }
 
     private void btnCuentaAhorrosActionPerformed(java.awt.event.ActionEvent evt) {
-        UtilidadesUI.abrirVentana(this, SeleccionMontoRetiro::new);
+        UtilidadesUI.ejecutarConToqueOpcion(() -> UtilidadesUI.abrirVentana(this, SeleccionMontoRetiro::new));
     }
 
     public static void main(String[] args) {

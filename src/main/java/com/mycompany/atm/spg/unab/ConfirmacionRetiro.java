@@ -50,25 +50,27 @@ public class ConfirmacionRetiro extends javax.swing.JFrame {
     }
 
     private void btnCantidadNoCorrectaActionPerformed(java.awt.event.ActionEvent evt) {
-        UtilidadesUI.abrirVentana(this, SeleccionMontoRetiro::new);
+        UtilidadesUI.ejecutarConToqueOpcion(() -> UtilidadesUI.abrirVentana(this, SeleccionMontoRetiro::new));
     }
 
     private void btnCantidadSiCorrectaActionPerformed(java.awt.event.ActionEvent evt) {
-        ResultadoRetiro resultado = FlujoATM.getInstance().retirarMontoSeleccionado();
-        if (!resultado.exito()) {
-            JOptionPane.showMessageDialog(this, resultado.mensaje(), "RETIRO", JOptionPane.WARNING_MESSAGE);
-            UtilidadesUI.abrirVentana(this, SeleccionMontoRetiro::new);
-            return;
-        }
+        UtilidadesUI.ejecutarConRetiroConfirmado(() -> {
+            ResultadoRetiro resultado = FlujoATM.getInstance().retirarMontoSeleccionado();
+            if (!resultado.exito()) {
+                JOptionPane.showMessageDialog(this, resultado.mensaje(), "RETIRO", JOptionPane.WARNING_MESSAGE);
+                UtilidadesUI.abrirVentana(this, SeleccionMontoRetiro::new);
+                return;
+            }
 
-        Integer monto = FlujoATM.getInstance().getMontoSeleccionado();
-        JOptionPane.showMessageDialog(this,
-                String.format("Retiro exitoso. Retiró $%d.\nSaldo restante: $%.2f", monto, resultado.saldoActual()),
-                "TRANSACCION OK",
-                JOptionPane.INFORMATION_MESSAGE);
+            Integer monto = FlujoATM.getInstance().getMontoSeleccionado();
+            JOptionPane.showMessageDialog(this,
+                    String.format("Retiro exitoso. Retiró $%d.\nSaldo restante: $%.2f", monto, resultado.saldoActual()),
+                    "TRANSACCION OK",
+                    JOptionPane.INFORMATION_MESSAGE);
 
-        FlujoATM.getInstance().cerrarSesion();
-        UtilidadesUI.abrirVentana(this, Inicio::new);
+            FlujoATM.getInstance().cerrarSesion();
+            UtilidadesUI.abrirVentana(this, Inicio::new);
+        });
     }
 
     public static void main(String[] args) {
