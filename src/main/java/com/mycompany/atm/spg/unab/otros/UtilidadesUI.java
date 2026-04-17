@@ -56,4 +56,14 @@ public final class UtilidadesUI {
         siguiente.setVisible(true);
         actual.dispose();
     }
+
+    public static void ejecutarConToqueOpcion(Runnable accion) {
+        ReproductorAudio.reproducirToqueOpcion();
+        accion.run();
+    }
+
+    public static void ejecutarConRetiroConfirmado(Runnable accion) {
+        ReproductorAudio.reproducirRetiroDinero();
+        accion.run();
+    }
 }
