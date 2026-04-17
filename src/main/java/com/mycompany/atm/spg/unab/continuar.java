@@ -1,15 +1,11 @@
 package com.mycompany.atm.spg.unab;
 
-import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.Font;
 import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
-public class continuar extends JFrame {
+public class continuar extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(continuar.class.getName());
 
@@ -18,53 +14,42 @@ public class continuar extends JFrame {
     }
 
     private void initComponents() {
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Continuar");
+        UIHelper.configurarVentanaBase(this, "Continuar");
 
-        ResponsiveBackgroundPanel panel = new ResponsiveBackgroundPanel("/imagenes/CONTINUAR.png", 1920, 1080);
+        PanelFondoResponsivo panel = new PanelFondoResponsivo("/imagenes/CONTINUAR.png", 1920, 1080);
 
-        JLabel pregunta = new JLabel("¿DESEAS CONTINUAR?");
-        pregunta.setForeground(Color.WHITE);
-        pregunta.setFont(new Font("Segoe UI Black", Font.BOLD, 48));
-        pregunta.setHorizontalAlignment(SwingConstants.CENTER);
+        javax.swing.JLabel pregunta = UIHelper.createOverlayLabel("¿DESEAS CONTINUAR?", 48);
 
-        JButton btnSi = createTransparentButton("SÍ", 36);
+        JButton btnSi = UIHelper.createTransparentButton("SÍ", 36);
         btnSi.addActionListener(this::btnSiActionPerformed);
 
-        JButton btnNo = createTransparentButton("NO", 36);
+        JButton btnNo = UIHelper.createTransparentButton("NO", 36);
         btnNo.addActionListener(this::btnNoActionPerformed);
 
-        panel.add(pregunta, new RelativeConstraints(0.333, 0.556, 0.292, 0.065));
-        panel.add(btnSi, new RelativeConstraints(0.813, 0.593, 0.104, 0.083));
-        panel.add(btnNo, new RelativeConstraints(0.818, 0.806, 0.104, 0.083));
+        panel.add(pregunta, new RestriccionesRelativas(0.333, 0.556, 0.292, 0.065));
+        panel.add(btnSi, new RestriccionesRelativas(0.813, 0.593, 0.104, 0.083));
+        panel.add(btnNo, new RestriccionesRelativas(0.818, 0.806, 0.104, 0.083));
 
         setContentPane(panel);
-        setMinimumSize(new java.awt.Dimension(960, 540));
-        setPreferredSize(new java.awt.Dimension(1280, 720));
         pack();
         setLocationRelativeTo(null);
     }
 
-    private JButton createTransparentButton(String text, int fontSize) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("Segoe UI Black", Font.BOLD, fontSize));
-        button.setForeground(Color.WHITE);
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false);
-        button.setFocusPainted(false);
-        return button;
-    }
-
     private void btnNoActionPerformed(java.awt.event.ActionEvent evt) {
-        inicio ventanaInicio = new inicio();
-        ventanaInicio.setVisible(true);
-        this.dispose();
+        FlujoATM.getInstance().cerrarSesion();
+        UIHelper.abrirVentana(this, inicio::new);
     }
 
     private void btnSiActionPerformed(java.awt.event.ActionEvent evt) {
-        transaccion ventanaTransaccion = new transaccion();
-        ventanaTransaccion.setVisible(true);
-        this.dispose();
+        if (!FlujoATM.getInstance().sesionActiva()) {
+            JOptionPane.showMessageDialog(this,
+                    "La sesión expiró. Vuelva a ingresar su PIN.",
+                    "Sesión no válida",
+                    JOptionPane.WARNING_MESSAGE);
+            UIHelper.abrirVentana(this, inicio::new);
+            return;
+        }
+        UIHelper.abrirVentana(this, transaccion::new);
     }
 
     public static void main(String args[]) {

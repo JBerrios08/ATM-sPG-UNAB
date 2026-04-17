@@ -4,29 +4,34 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.LayoutManager2;
+import java.awt.FontMetrics;
 import java.awt.Rectangle;
+import java.awt.LayoutManager2;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.swing.AbstractButton;
+import javax.swing.JLabel;
 
 /**
  * Layout manager que coloca componentes en capas usando posiciones relativas
  * dentro del área visible de un diseño base.
  */
-public class RelativeOverlayLayout implements LayoutManager2 {
+public class DisenoSuperpuestoRelativo implements LayoutManager2 {
+
+    private static final float MIN_FONT_SIZE = 10.0f;
 
     private final Dimension designSize;
-    private final Map<Component, RelativeConstraints> constraintsByComponent = new LinkedHashMap<>();
+    private final Map<Component, RestriccionesRelativas> constraintsByComponent = new LinkedHashMap<>();
     private final Map<Component, Font> baseFonts = new LinkedHashMap<>();
 
-    public RelativeOverlayLayout(Dimension designSize) {
+    public DisenoSuperpuestoRelativo(Dimension designSize) {
         this.designSize = new Dimension(designSize);
     }
 
     @Override
     public void addLayoutComponent(Component comp, Object constraints) {
-        if (!(constraints instanceof RelativeConstraints rc)) {
-            throw new IllegalArgumentException("Use RelativeConstraints para agregar componentes.");
+        if (!(constraints instanceof RestriccionesRelativas rc)) {
+            throw new IllegalArgumentException("Use RestriccionesRelativas para agregar componentes.");
         }
         constraintsByComponent.put(comp, rc);
         if (comp.getFont() != null) {
@@ -81,23 +86,65 @@ public class RelativeOverlayLayout implements LayoutManager2 {
         double scale = Math.min((double) renderBounds.width / designSize.width,
                 (double) renderBounds.height / designSize.height);
 
-        for (Map.Entry<Component, RelativeConstraints> entry : constraintsByComponent.entrySet()) {
+        for (Map.Entry<Component, RestriccionesRelativas> entry : constraintsByComponent.entrySet()) {
             Component comp = entry.getKey();
-            RelativeConstraints rc = entry.getValue();
+            RestriccionesRelativas rc = entry.getValue();
 
             int x = renderBounds.x + (int) Math.round(renderBounds.width * rc.x());
             int y = renderBounds.y + (int) Math.round(renderBounds.height * rc.y());
-            int w = (int) Math.round(renderBounds.width * rc.width());
-            int h = (int) Math.round(renderBounds.height * rc.height());
+            int w = Math.max(1, (int) Math.round(renderBounds.width * rc.width()));
+            int h = Math.max(1, (int) Math.round(renderBounds.height * rc.height()));
 
             comp.setBounds(x, y, w, h);
 
             Font base = baseFonts.get(comp);
             if (base != null) {
-                float newSize = (float) Math.max(11.0, base.getSize2D() * scale);
-                comp.setFont(base.deriveFont(newSize));
+                float scaledSize = (float) Math.max(MIN_FONT_SIZE, base.getSize2D() * scale);
+                Font scaledFont = base.deriveFont(scaledSize);
+                Font fittedFont = ajustarFuenteParaContenido(comp, scaledFont, w, h);
+                comp.setFont(fittedFont);
             }
         }
+    }
+
+    private Font ajustarFuenteParaContenido(Component comp, Font initialFont, int width, int height) {
+        String text = extractText(comp);
+        if (text == null || text.isBlank()) {
+            return initialFont;
+        }
+
+        Font current = initialFont;
+        int maxTextWidth = Math.max(1, (int) (width * 0.94));
+        int maxTextHeight = Math.max(1, (int) (height * 0.90));
+
+        while (current.getSize2D() > MIN_FONT_SIZE) {
+            FontMetrics fm = comp.getFontMetrics(current);
+            int textWidth = fm.stringWidth(text);
+            int textHeight = fm.getHeight();
+            if (textWidth <= maxTextWidth && textHeight <= maxTextHeight) {
+                return current;
+            }
+            current = current.deriveFont(Math.max(MIN_FONT_SIZE, current.getSize2D() - 1.0f));
+        }
+
+        return current;
+    }
+
+    private String extractText(Component comp) {
+        if (comp instanceof JLabel label) {
+            return sanitizarTexto(label.getText());
+        }
+        if (comp instanceof AbstractButton button) {
+            return sanitizarTexto(button.getText());
+        }
+        return null;
+    }
+
+    private String sanitizarTexto(String rawText) {
+        if (rawText == null) {
+            return null;
+        }
+        return rawText.replaceAll("<[^>]*>", "").replace("\n", " ").trim();
     }
 
     public static Rectangle computeCoverBounds(int containerWidth, int containerHeight, Dimension design) {

@@ -1,15 +1,11 @@
 package com.mycompany.atm.spg.unab;
 
-import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.Font;
 import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
-public class transaccion extends JFrame {
+public class transaccion extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(transaccion.class.getName());
 
@@ -18,49 +14,49 @@ public class transaccion extends JFrame {
     }
 
     private void initComponents() {
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Transacción");
+        UIHelper.configurarVentanaBase(this, "Transacción");
 
-        ResponsiveBackgroundPanel panel = new ResponsiveBackgroundPanel("/imagenes/TRANSACCION.png", 1920, 1080);
+        PanelFondoResponsivo panel = new PanelFondoResponsivo("/imagenes/TRANSACCION.png", 1920, 1080);
 
-        JLabel titulo = new JLabel("SELECCIONE SU TRANSACCIÓN", SwingConstants.CENTER);
-        titulo.setForeground(Color.WHITE);
-        titulo.setFont(new Font("Segoe UI Black", Font.BOLD, 50));
+        javax.swing.JLabel titulo = UIHelper.createOverlayLabel("SELECCIONE SU TRANSACCIÓN", 50);
 
-        JButton btnRetiros = createTransparentButton("RETIROS", 48);
+        JButton btnRetiros = UIHelper.createTransparentButton("RETIROS", 48);
         btnRetiros.addActionListener(this::btnRetirosActionPerformed);
 
-        JButton btnDeposito = createTransparentButton("DEPOSITO", 48);
-        JButton btnConsultarSaldo = createTransparentButton("CONSULTAR SALDO", 48);
-        JButton btnSalir = createTransparentButton("SALIR", 48);
+        JButton btnDeposito = UIHelper.createTransparentButton("DEPÓSITO", 44);
+        btnDeposito.addActionListener(evt -> mostrarNoDisponible("Depósito"));
 
-        panel.add(titulo, new RelativeConstraints(0.292, 0.287, 0.417, 0.074));
-        panel.add(btnConsultarSaldo, new RelativeConstraints(0.083, 0.481, 0.281, 0.102));
-        panel.add(btnSalir, new RelativeConstraints(0.078, 0.759, 0.099, 0.102));
-        panel.add(btnRetiros, new RelativeConstraints(0.786, 0.481, 0.135, 0.102));
-        panel.add(btnDeposito, new RelativeConstraints(0.766, 0.778, 0.156, 0.102));
+        JButton btnConsultarSaldo = UIHelper.createTransparentButton("CONSULTAR SALDO", 44);
+        btnConsultarSaldo.addActionListener(evt -> mostrarNoDisponible("Consulta de saldo"));
+
+        JButton btnSalir = UIHelper.createTransparentButton("SALIR", 48);
+        btnSalir.addActionListener(this::btnSalirActionPerformed);
+
+        panel.add(titulo, new RestriccionesRelativas(0.292, 0.287, 0.417, 0.074));
+        panel.add(btnConsultarSaldo, new RestriccionesRelativas(0.070, 0.481, 0.300, 0.102));
+        panel.add(btnSalir, new RestriccionesRelativas(0.078, 0.759, 0.099, 0.102));
+        panel.add(btnRetiros, new RestriccionesRelativas(0.786, 0.481, 0.135, 0.102));
+        panel.add(btnDeposito, new RestriccionesRelativas(0.760, 0.778, 0.165, 0.102));
 
         setContentPane(panel);
-        setMinimumSize(new java.awt.Dimension(960, 540));
-        setPreferredSize(new java.awt.Dimension(1280, 720));
         pack();
         setLocationRelativeTo(null);
     }
 
-    private JButton createTransparentButton(String text, int fontSize) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("Segoe UI Black", Font.BOLD, fontSize));
-        button.setForeground(Color.WHITE);
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false);
-        button.setFocusPainted(false);
-        return button;
+    private void mostrarNoDisponible(String funcionalidad) {
+        JOptionPane.showMessageDialog(this,
+                funcionalidad + " no está implementada todavía.",
+                "Funcionalidad pendiente",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void btnRetirosActionPerformed(java.awt.event.ActionEvent evt) {
-        retiro ventanaRetiro = new retiro();
-        ventanaRetiro.setVisible(true);
-        this.dispose();
+        UIHelper.abrirVentana(this, retiro::new);
+    }
+
+    private void btnSalirActionPerformed(java.awt.event.ActionEvent evt) {
+        FlujoATM.getInstance().cerrarSesion();
+        UIHelper.abrirVentana(this, inicio::new);
     }
 
     public static void main(String args[]) {
