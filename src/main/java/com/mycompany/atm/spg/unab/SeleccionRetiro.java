@@ -4,26 +4,24 @@ import java.awt.EventQueue;
 import javax.swing.JButton;
 import javax.swing.UIManager;
 
-public class retiro extends javax.swing.JFrame {
+public class SeleccionRetiro extends javax.swing.JFrame {
 
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(retiro.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(SeleccionRetiro.class.getName());
 
-    public retiro() {
+    public SeleccionRetiro() {
         initComponents();
     }
 
     private void initComponents() {
-        UIHelper.configurarVentanaBase(this, "Retiro");
-
+        UtilidadesUI.configurarVentanaBase(this, "Retiro");
         PanelFondoResponsivo panel = new PanelFondoResponsivo("/imagenes/RETIRO.png", 1920, 1080);
 
-        javax.swing.JLabel titulo = UIHelper.createOverlayLabel("SELECCIONE UNA OPCIÓN", 50);
+        javax.swing.JLabel titulo = UtilidadesUI.crearEtiquetaSuperpuesta("SELECCIONE UNA OPCIÓN", 50);
+        JButton btnCuentaAhorros = UtilidadesUI.crearBotonTransparente("CUENTA DE AHORROS", 43);
+        JButton btnCancelar = UtilidadesUI.crearBotonTransparente("CANCELAR", 48);
 
-        JButton btnCuentaAhorros = UIHelper.createTransparentButton("CUENTA DE AHORROS", 43);
-        btnCuentaAhorros.addActionListener(this::btnCuentadeAhorrosActionPerformed);
-
-        JButton btnCancelar = UIHelper.createTransparentButton("CANCELAR", 48);
-        btnCancelar.addActionListener(this::btnSalirInicioActionPerformed);
+        btnCuentaAhorros.addActionListener(this::btnCuentaAhorrosActionPerformed);
+        btnCancelar.addActionListener(this::btnCancelarActionPerformed);
 
         panel.add(titulo, new RestriccionesRelativas(0.339, 0.287, 0.323, 0.074));
         panel.add(btnCuentaAhorros, new RestriccionesRelativas(0.60, 0.481, 0.333, 0.102));
@@ -34,16 +32,16 @@ public class retiro extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }
 
-    private void btnSalirInicioActionPerformed(java.awt.event.ActionEvent evt) {
+    private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {
         FlujoATM.getInstance().cerrarSesion();
-        UIHelper.abrirVentana(this, inicio::new);
+        UtilidadesUI.abrirVentana(this, Inicio::new);
     }
 
-    private void btnCuentadeAhorrosActionPerformed(java.awt.event.ActionEvent evt) {
-        UIHelper.abrirVentana(this, cantidadaretirar::new);
+    private void btnCuentaAhorrosActionPerformed(java.awt.event.ActionEvent evt) {
+        UtilidadesUI.abrirVentana(this, SeleccionMontoRetiro::new);
     }
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         try {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -54,7 +52,6 @@ public class retiro extends javax.swing.JFrame {
         } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
             logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
-
-        EventQueue.invokeLater(() -> new retiro().setVisible(true));
+        EventQueue.invokeLater(() -> new SeleccionRetiro().setVisible(true));
     }
 }
