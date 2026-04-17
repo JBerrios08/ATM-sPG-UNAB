@@ -15,53 +15,63 @@ public class RepositorioATM {
 
     private static final DateTimeFormatter FORMATO_DB = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public Optional<Usuario> buscarUsuarioPorPin(String pin) {
-        String sql = "SELECT id, nombre, numero_cuenta, pin, saldo FROM usuarios WHERE pin = ? ORDER BY id LIMIT 1";
+    public Optional<ClienteATM> buscarClientePorPin(String pin) {
+        String sql = """
+                SELECT c.id_cliente, c.nombre, c.apellido, c.num_tarjeta, c.pin,
+                       cu.id_cuenta, cu.num_cuenta, cu.tipo_cuenta, cu.saldo_disponible
+                FROM cliente c
+                JOIN cuenta cu ON cu.id_cliente = c.id_cliente
+                WHERE c.pin = ?
+                ORDER BY c.id_cliente
+                LIMIT 1
+                """;
+
         try (Connection cn = GestorBaseDatos.obtenerConexion(); PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, pin);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
                     return Optional.empty();
                 }
-                return Optional.of(new Usuario(rs.getInt("id"), rs.getString("nombre"),
-                        rs.getString("numero_cuenta"), rs.getString("pin"), rs.getDouble("saldo")));
+                return Optional.of(mapearCliente(rs));
             }
         } catch (SQLException ex) {
             throw new IllegalStateException("Error consultando PIN.", ex);
         }
     }
 
-    public double obtenerSaldo(String numeroCuenta) {
-        String sql = "SELECT saldo FROM usuarios WHERE numero_cuenta = ?";
+    public double obtenerSaldo(String numCuenta) {
+        String sql = "SELECT saldo_disponible FROM cuenta WHERE num_cuenta = ?";
         try (Connection cn = GestorBaseDatos.obtenerConexion(); PreparedStatement ps = cn.prepareStatement(sql)) {
-            ps.setString(1, numeroCuenta);
+            ps.setString(1, numCuenta);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
                     throw new IllegalStateException("La cuenta no existe.");
                 }
-                return rs.getDouble("saldo");
+                return rs.getDouble("saldo_disponible");
             }
         } catch (SQLException ex) {
             throw new IllegalStateException("Error al consultar saldo.", ex);
         }
     }
 
-    public ResultadoRetiro retirar(String numeroCuenta, int monto) {
-        String sqlSaldo = "SELECT saldo FROM usuarios WHERE numero_cuenta = ?";
-        String sqlActualizar = "UPDATE usuarios SET saldo = ? WHERE numero_cuenta = ?";
+    public ResultadoRetiro retirar(String numCuenta, int monto) {
+        String sqlCuenta = "SELECT id_cuenta, saldo_disponible FROM cuenta WHERE num_cuenta = ?";
+        String sqlActualizar = "UPDATE cuenta SET saldo_disponible = ? WHERE num_cuenta = ?";
 
         try (Connection cn = GestorBaseDatos.obtenerConexion()) {
             cn.setAutoCommit(false);
             try {
+                int idCuenta;
                 double saldoActual;
-                try (PreparedStatement psSaldo = cn.prepareStatement(sqlSaldo)) {
-                    psSaldo.setString(1, numeroCuenta);
+                try (PreparedStatement psSaldo = cn.prepareStatement(sqlCuenta)) {
+                    psSaldo.setString(1, numCuenta);
                     try (ResultSet rs = psSaldo.executeQuery()) {
                         if (!rs.next()) {
                             cn.rollback();
                             return new ResultadoRetiro(false, "No se encontró la cuenta.", 0);
                         }
-                        saldoActual = rs.getDouble("saldo");
+                        idCuenta = rs.getInt("id_cuenta");
+                        saldoActual = rs.getDouble("saldo_disponible");
                     }
                 }
 
@@ -69,6 +79,7 @@ public class RepositorioATM {
                     cn.rollback();
                     return new ResultadoRetiro(false, "Monto inválido.", saldoActual);
                 }
+
                 if (saldoActual < monto) {
                     cn.rollback();
                     return new ResultadoRetiro(false, "Saldo insuficiente.", saldoActual);
@@ -77,11 +88,11 @@ public class RepositorioATM {
                 double nuevoSaldo = saldoActual - monto;
                 try (PreparedStatement psUpdate = cn.prepareStatement(sqlActualizar)) {
                     psUpdate.setDouble(1, nuevoSaldo);
-                    psUpdate.setString(2, numeroCuenta);
+                    psUpdate.setString(2, numCuenta);
                     psUpdate.executeUpdate();
                 }
 
-                insertarTransaccion(cn, numeroCuenta, "RETIRO", monto);
+                insertarTransaccion(cn, idCuenta, "RETIRO", monto);
                 cn.commit();
                 return new ResultadoRetiro(true, "Retiro exitoso.", nuevoSaldo);
             } catch (SQLException ex) {
@@ -95,28 +106,37 @@ public class RepositorioATM {
         }
     }
 
-    public void registrarTransaccion(String numeroCuenta, String tipo, double monto) {
-        try (Connection cn = GestorBaseDatos.obtenerConexion()) {
-            insertarTransaccion(cn, numeroCuenta, tipo, monto);
+    public void registrarTransaccion(String numCuenta, String tipo, double monto) {
+        String sql = "SELECT id_cuenta FROM cuenta WHERE num_cuenta = ?";
+        try (Connection cn = GestorBaseDatos.obtenerConexion(); PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, numCuenta);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    throw new IllegalStateException("No se encontró la cuenta para transacción.");
+                }
+                insertarTransaccion(cn, rs.getInt("id_cuenta"), tipo, monto);
+            }
         } catch (SQLException ex) {
             throw new IllegalStateException("No se pudo registrar la transacción.", ex);
         }
     }
 
-    public List<TransaccionRegistro> obtenerHistorial(String numeroCuenta) {
+    public List<HistorialTransacciones> obtenerHistorial(String numCuenta) {
         String sql = """
-                SELECT tipo, monto, fecha
-                FROM transacciones
-                WHERE numero_cuenta = ?
-                ORDER BY id DESC
+                SELECT t.tipo, t.monto, t.fecha
+                FROM transaccion t
+                JOIN cuenta cu ON cu.id_cuenta = t.id_cuenta
+                WHERE cu.num_cuenta = ?
+                ORDER BY t.id_transaccion DESC
                 LIMIT 20
                 """;
-        List<TransaccionRegistro> historial = new ArrayList<>();
+
+        List<HistorialTransacciones> historial = new ArrayList<>();
         try (Connection cn = GestorBaseDatos.obtenerConexion(); PreparedStatement ps = cn.prepareStatement(sql)) {
-            ps.setString(1, numeroCuenta);
+            ps.setString(1, numCuenta);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    historial.add(new TransaccionRegistro(
+                    historial.add(new HistorialTransacciones(
                             rs.getString("tipo"),
                             rs.getDouble("monto"),
                             parsearFecha(rs.getString("fecha"))
@@ -129,10 +149,29 @@ public class RepositorioATM {
         }
     }
 
-    private void insertarTransaccion(Connection cn, String numeroCuenta, String tipo, double monto) throws SQLException {
-        String sql = "INSERT INTO transacciones (numero_cuenta, tipo, monto, fecha) VALUES (?, ?, ?, ?)";
+    private ClienteATM mapearCliente(ResultSet rs) throws SQLException {
+        CuentaATM cuenta = new CuentaATM(
+                rs.getInt("id_cuenta"),
+                rs.getInt("id_cliente"),
+                rs.getString("num_cuenta"),
+                rs.getString("tipo_cuenta"),
+                rs.getDouble("saldo_disponible")
+        );
+
+        return new ClienteATM(
+                rs.getInt("id_cliente"),
+                rs.getString("nombre"),
+                rs.getString("apellido"),
+                rs.getString("num_tarjeta"),
+                rs.getString("pin"),
+                cuenta
+        );
+    }
+
+    private void insertarTransaccion(Connection cn, int idCuenta, String tipo, double monto) throws SQLException {
+        String sql = "INSERT INTO transaccion (id_cuenta, tipo, monto, fecha) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
-            ps.setString(1, numeroCuenta);
+            ps.setInt(1, idCuenta);
             ps.setString(2, tipo);
             ps.setDouble(3, monto);
             ps.setString(4, LocalDateTime.now().format(FORMATO_DB));

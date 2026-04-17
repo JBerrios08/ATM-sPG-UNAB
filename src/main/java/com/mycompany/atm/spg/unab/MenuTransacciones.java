@@ -60,14 +60,14 @@ public class MenuTransacciones extends javax.swing.JFrame {
     }
 
     private void mostrarHistorial() {
-        List<TransaccionRegistro> historial = FlujoATM.getInstance().obtenerHistorial();
+        List<HistorialTransacciones> historial = FlujoATM.getInstance().obtenerHistorial();
         if (historial.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No hay transacciones registradas.", "Historial", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
         StringBuilder texto = new StringBuilder();
-        for (TransaccionRegistro registro : historial) {
+        for (HistorialTransacciones registro : historial) {
             texto.append(registro.fecha().format(FORMATO_FECHA))
                     .append(" | ")
                     .append(registro.tipo())
