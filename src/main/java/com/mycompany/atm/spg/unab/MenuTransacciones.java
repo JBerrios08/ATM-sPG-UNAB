@@ -1,5 +1,8 @@
 package com.mycompany.atm.spg.unab;
 
+import com.mycompany.atm.spg.unab.otros.PanelFondoResponsivo;
+import com.mycompany.atm.spg.unab.otros.RestriccionesRelativas;
+import com.mycompany.atm.spg.unab.otros.UtilidadesUI;
 import java.awt.EventQueue;
 import java.time.format.DateTimeFormatter;
 import java.util.List;

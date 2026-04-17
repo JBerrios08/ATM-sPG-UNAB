@@ -1,5 +1,8 @@
 package com.mycompany.atm.spg.unab;
 
+import com.mycompany.atm.spg.unab.otros.PanelFondoResponsivo;
+import com.mycompany.atm.spg.unab.otros.RestriccionesRelativas;
+import com.mycompany.atm.spg.unab.otros.UtilidadesUI;
 import java.awt.Color;
 import java.awt.EventQueue;
 import javax.swing.JButton;
@@ -25,7 +28,9 @@ public class Inicio extends javax.swing.JFrame {
                 UtilidadesUI.textoEnDosLineas("ESTIMADO USUARIO, INGRESE SU PIN", "Y PRESIONE CONTNUAR"),
                 24);
 
-        javax.swing.JLabel autores = UtilidadesUI.crearEtiquetaSuperpuesta("Autores: Alexis Castro - Jaime Berrios", 18);
+        javax.swing.JLabel integrantes = UtilidadesUI.crearEtiquetaSuperpuesta(
+                UtilidadesUI.textoEnDosLineas("INTEGRANTES", "Alexis Castro · Jaime Berrios"),
+                20);
 
         password = new JPasswordField();
         password.setBackground(Color.WHITE);
@@ -39,7 +44,7 @@ public class Inicio extends javax.swing.JFrame {
         btnContinuar.addActionListener(this::btnContinuarActionPerformed);
 
         panel.add(titulo, new RestriccionesRelativas(0.20, 0.23, 0.60, 0.16));
-        panel.add(autores, new RestriccionesRelativas(0.26, 0.90, 0.50, 0.05));
+        panel.add(integrantes, new RestriccionesRelativas(0.31, 0.875, 0.38, 0.09));
         panel.add(password, new RestriccionesRelativas(0.396, 0.519, 0.203, 0.056));
         panel.add(btnContinuar, new RestriccionesRelativas(0.423, 0.778, 0.155, 0.083));
 
