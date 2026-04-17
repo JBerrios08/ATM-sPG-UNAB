@@ -10,10 +10,6 @@ import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
-/**
- * Panel que dibuja una imagen de fondo escalada con estrategia "cover"
- * y permite posicionar componentes en coordenadas relativas.
- */
 public class PanelFondoResponsivo extends JPanel {
 
     private final Dimension designSize;
@@ -39,7 +35,6 @@ public class PanelFondoResponsivo extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-
         Rectangle bounds = getRenderBounds();
         g2.drawImage(backgroundImage, bounds.x, bounds.y, bounds.width, bounds.height, this);
         g2.dispose();

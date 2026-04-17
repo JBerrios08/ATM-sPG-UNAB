@@ -12,10 +12,6 @@ import java.util.Map;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
 
-/**
- * Layout manager que coloca componentes en capas usando posiciones relativas
- * dentro del área visible de un diseño base.
- */
 public class DisenoSuperpuestoRelativo implements LayoutManager2 {
 
     private static final float MIN_FONT_SIZE = 10.0f;
@@ -56,7 +52,6 @@ public class DisenoSuperpuestoRelativo implements LayoutManager2 {
 
     @Override
     public void invalidateLayout(Container target) {
-        // No-op
     }
 
     @Override
@@ -83,8 +78,7 @@ public class DisenoSuperpuestoRelativo implements LayoutManager2 {
     @Override
     public void layoutContainer(Container parent) {
         Rectangle renderBounds = computeCoverBounds(parent.getWidth(), parent.getHeight(), designSize);
-        double scale = Math.min((double) renderBounds.width / designSize.width,
-                (double) renderBounds.height / designSize.height);
+        double scale = Math.min((double) renderBounds.width / designSize.width, (double) renderBounds.height / designSize.height);
 
         for (Map.Entry<Component, RestriccionesRelativas> entry : constraintsByComponent.entrySet()) {
             Component comp = entry.getKey();
@@ -101,8 +95,7 @@ public class DisenoSuperpuestoRelativo implements LayoutManager2 {
             if (base != null) {
                 float scaledSize = (float) Math.max(MIN_FONT_SIZE, base.getSize2D() * scale);
                 Font scaledFont = base.deriveFont(scaledSize);
-                Font fittedFont = ajustarFuenteParaContenido(comp, scaledFont, w, h);
-                comp.setFont(fittedFont);
+                comp.setFont(ajustarFuenteParaContenido(comp, scaledFont, w, h));
             }
         }
     }
@@ -119,9 +112,7 @@ public class DisenoSuperpuestoRelativo implements LayoutManager2 {
 
         while (current.getSize2D() > MIN_FONT_SIZE) {
             FontMetrics fm = comp.getFontMetrics(current);
-            int textWidth = fm.stringWidth(text);
-            int textHeight = fm.getHeight();
-            if (textWidth <= maxTextWidth && textHeight <= maxTextHeight) {
+            if (fm.stringWidth(text) <= maxTextWidth && fm.getHeight() <= maxTextHeight) {
                 return current;
             }
             current = current.deriveFont(Math.max(MIN_FONT_SIZE, current.getSize2D() - 1.0f));

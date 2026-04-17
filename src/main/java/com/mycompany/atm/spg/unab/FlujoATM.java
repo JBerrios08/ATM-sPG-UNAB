@@ -1,13 +1,12 @@
 package com.mycompany.atm.spg.unab;
 
-/**
- * Estado de sesión simple para mantener datos del flujo de ATM.
- */
+import java.util.Collections;
+import java.util.List;
+
 public final class FlujoATM {
 
     private static final FlujoATM INSTANCE = new FlujoATM();
-
-    private final ATMService atmService = new ATMService();
+    private final ServicioATM servicioATM = new ServicioATM();
 
     private Usuario usuarioAutenticado;
     private Integer montoSeleccionado;
@@ -23,13 +22,11 @@ public final class FlujoATM {
         if (pinChars == null) {
             return false;
         }
-
         String pin = new String(pinChars).trim();
         if (!pin.matches("\\d{4}")) {
             return false;
         }
-
-        usuarioAutenticado = atmService.autenticarPorPin(pin).orElse(null);
+        usuarioAutenticado = servicioATM.autenticarPorPin(pin).orElse(null);
         return usuarioAutenticado != null;
     }
 
@@ -38,7 +35,7 @@ public final class FlujoATM {
     }
 
     public void registrarMonto(Integer monto) {
-        this.montoSeleccionado = monto;
+        montoSeleccionado = monto;
     }
 
     public Integer getMontoSeleccionado() {
@@ -46,30 +43,41 @@ public final class FlujoATM {
     }
 
     public double obtenerSaldoActual() {
-        if (!sesionActiva()) {
-            throw new IllegalStateException("No hay una sesión activa.");
-        }
-        return atmService.consultarSaldo(usuarioAutenticado.getNumeroCuenta());
+        validarSesion();
+        return servicioATM.consultarSaldo(usuarioAutenticado.getNumeroCuenta());
     }
 
     public void registrarConsultaSaldo() {
         if (sesionActiva()) {
-            atmService.registrarConsultaSaldo(usuarioAutenticado.getNumeroCuenta());
+            servicioATM.registrarConsultaSaldo(usuarioAutenticado.getNumeroCuenta());
         }
     }
 
-    public RetiroResultado retirarMontoSeleccionado() {
+    public ResultadoRetiro retirarMontoSeleccionado() {
         if (!sesionActiva()) {
-            return new RetiroResultado(false, "La sesión expiró. Inicie sesión nuevamente.", 0);
+            return new ResultadoRetiro(false, "Sesión vencida.", 0);
         }
         if (montoSeleccionado == null) {
-            return new RetiroResultado(false, "No se encontró un monto seleccionado.", obtenerSaldoActual());
+            return new ResultadoRetiro(false, "No hay monto seleccionado.", obtenerSaldoActual());
         }
-        return atmService.retirar(usuarioAutenticado.getNumeroCuenta(), montoSeleccionado);
+        return servicioATM.retirar(usuarioAutenticado.getNumeroCuenta(), montoSeleccionado);
+    }
+
+    public List<TransaccionRegistro> obtenerHistorial() {
+        if (!sesionActiva()) {
+            return Collections.emptyList();
+        }
+        return servicioATM.consultarHistorial(usuarioAutenticado.getNumeroCuenta());
     }
 
     public void cerrarSesion() {
         usuarioAutenticado = null;
         montoSeleccionado = null;
+    }
+
+    private void validarSesion() {
+        if (!sesionActiva()) {
+            throw new IllegalStateException("La sesión no está activa.");
+        }
     }
 }

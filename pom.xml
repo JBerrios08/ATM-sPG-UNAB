@@ -29,8 +29,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>25</maven.compiler.release>
-        <exec.mainClass>com.mycompany.atm.spg.unab.ATMSPGUNAB</exec.mainClass>
+        <maven.compiler.release>17</maven.compiler.release>
+        <exec.mainClass>com.mycompany.atm.spg.unab.AplicacionATM</exec.mainClass>
     </properties>
 
 </project>

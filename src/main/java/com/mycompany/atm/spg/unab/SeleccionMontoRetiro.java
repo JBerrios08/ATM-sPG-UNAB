@@ -1,43 +1,33 @@
 package com.mycompany.atm.spg.unab;
 
 import java.awt.EventQueue;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
-public class cantidadaretirar extends javax.swing.JFrame {
+public class SeleccionMontoRetiro extends javax.swing.JFrame {
 
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(cantidadaretirar.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(SeleccionMontoRetiro.class.getName());
 
-    public cantidadaretirar() {
+    public SeleccionMontoRetiro() {
         initComponents();
     }
 
     private void initComponents() {
-        UIHelper.configurarVentanaBase(this, "Cantidad a retirar");
-
+        UtilidadesUI.configurarVentanaBase(this, "Cantidad a retirar");
         PanelFondoResponsivo panel = new PanelFondoResponsivo("/imagenes/CANTIDAD.png", 1920, 1080);
 
-        javax.swing.JLabel titulo = UIHelper.createOverlayLabel(
-                UIHelper.textoEnDosLineas("SELECCIONE UNA CANTIDAD", "A RETIRAR"),
+        javax.swing.JLabel titulo = UtilidadesUI.crearEtiquetaSuperpuesta(
+                UtilidadesUI.textoEnDosLineas("SELECCIONE UNA CANTDAD", "A RETIRAR"),
                 48);
 
-        Map<String, Integer> montos = new LinkedHashMap<>();
-        montos.put("$5", 5);
-        montos.put("$15", 15);
-        montos.put("$25", 25);
-        montos.put("$75", 75);
-        montos.put("$115", 115);
+        JButton btn5 = crearBotonMonto("$5", 5);
+        JButton btn15 = crearBotonMonto("$15", 15);
+        JButton btn25 = crearBotonMonto("$25", 25);
+        JButton btn75 = crearBotonMonto("$75", 75);
+        JButton btn115 = crearBotonMonto("$115", 115);
 
-        JButton btn5 = crearBotonMonto("$5", montos.get("$5"));
-        JButton btn15 = crearBotonMonto("$15", montos.get("$15"));
-        JButton btn25 = crearBotonMonto("$25", montos.get("$25"));
-        JButton btn75 = crearBotonMonto("$75", montos.get("$75"));
-        JButton btn115 = crearBotonMonto("$115", montos.get("$115"));
-
-        JButton btnOtra = UIHelper.createTransparentButton("OTRA CANTIDAD", 42);
+        JButton btnOtra = UtilidadesUI.crearBotonTransparente("OTRA CANTIDAD", 42);
         btnOtra.addActionListener(this::btnOtraCantidadActionPerformed);
 
         panel.add(titulo, new RestriccionesRelativas(0.224, 0.270, 0.552, 0.105));
@@ -54,38 +44,37 @@ public class cantidadaretirar extends javax.swing.JFrame {
     }
 
     private JButton crearBotonMonto(String etiqueta, int monto) {
-        JButton button = UIHelper.createTransparentButton(etiqueta, 48);
-        button.addActionListener(evt -> irARetiroProceder(monto));
+        JButton button = UtilidadesUI.crearBotonTransparente(etiqueta, 48);
+        button.addActionListener(evt -> irAConfirmacion(monto));
         return button;
     }
 
-    private void irARetiroProceder(Integer montoSeleccionado) {
-        FlujoATM.getInstance().registrarMonto(montoSeleccionado);
-        UIHelper.abrirVentana(this, retiroproceder::new);
+    private void irAConfirmacion(int monto) {
+        FlujoATM.getInstance().registrarMonto(monto);
+        UtilidadesUI.abrirVentana(this, ConfirmacionRetiro::new);
     }
 
     private void btnOtraCantidadActionPerformed(java.awt.event.ActionEvent evt) {
-        String entrada = JOptionPane.showInputDialog(this, "Ingrese el monto a retirar:", "Monto personalizado",
-                JOptionPane.QUESTION_MESSAGE);
+        String entrada = JOptionPane.showInputDialog(this, "Ingrese el monto a retirar:", "Monto", JOptionPane.QUESTION_MESSAGE);
         if (entrada == null) {
             return;
         }
 
         String limpio = entrada.trim().replace("$", "");
         if (!limpio.matches("\\d+")) {
-            JOptionPane.showMessageDialog(this, "Ingrese solo números enteros.", "Monto inválido", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Ingrese solo números.", "Monto", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         int monto = Integer.parseInt(limpio);
         if (monto <= 0) {
-            JOptionPane.showMessageDialog(this, "El monto debe ser mayor a cero.", "Monto inválido", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Monto inválido.", "Monto", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        irARetiroProceder(monto);
+        irAConfirmacion(monto);
     }
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         try {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -96,7 +85,6 @@ public class cantidadaretirar extends javax.swing.JFrame {
         } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
             logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
-
-        EventQueue.invokeLater(() -> new cantidadaretirar().setVisible(true));
+        EventQueue.invokeLater(() -> new SeleccionMontoRetiro().setVisible(true));
     }
 }
