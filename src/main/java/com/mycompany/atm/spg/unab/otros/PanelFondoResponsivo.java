@@ -1,4 +1,4 @@
-package com.mycompany.atm.spg.unab;
+package com.mycompany.atm.spg.unab.otros;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
