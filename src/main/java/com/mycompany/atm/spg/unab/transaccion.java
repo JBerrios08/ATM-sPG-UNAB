@@ -27,7 +27,7 @@ public class transaccion extends javax.swing.JFrame {
         btnDeposito.addActionListener(evt -> mostrarNoDisponible("Depósito"));
 
         JButton btnConsultarSaldo = UIHelper.createTransparentButton("CONSULTAR SALDO", 44);
-        btnConsultarSaldo.addActionListener(evt -> mostrarNoDisponible("Consulta de saldo"));
+        btnConsultarSaldo.addActionListener(evt -> consultarSaldoActual());
 
         JButton btnSalir = UIHelper.createTransparentButton("SALIR", 48);
         btnSalir.addActionListener(this::btnSalirActionPerformed);
@@ -48,6 +48,23 @@ public class transaccion extends javax.swing.JFrame {
                 funcionalidad + " no está implementada todavía.",
                 "Funcionalidad pendiente",
                 JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void consultarSaldoActual() {
+        try {
+            double saldo = FlujoATM.getInstance().obtenerSaldoActual();
+            FlujoATM.getInstance().registrarConsultaSaldo();
+            JOptionPane.showMessageDialog(this,
+                    String.format("Su saldo actual es: $%.2f", saldo),
+                    "Consulta de saldo",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } catch (IllegalStateException ex) {
+            JOptionPane.showMessageDialog(this,
+                    ex.getMessage(),
+                    "Sesión no válida",
+                    JOptionPane.WARNING_MESSAGE);
+            UIHelper.abrirVentana(this, inicio::new);
+        }
     }
 
     private void btnRetirosActionPerformed(java.awt.event.ActionEvent evt) {

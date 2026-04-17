@@ -7,9 +7,9 @@ public final class FlujoATM {
 
     private static final FlujoATM INSTANCE = new FlujoATM();
 
-    private static final String PIN_VALIDO = "1234";
+    private final ATMService atmService = new ATMService();
 
-    private String pinIngresado;
+    private Usuario usuarioAutenticado;
     private Integer montoSeleccionado;
 
     private FlujoATM() {
@@ -23,19 +23,18 @@ public final class FlujoATM {
         if (pinChars == null) {
             return false;
         }
+
         String pin = new String(pinChars).trim();
         if (!pin.matches("\\d{4}")) {
             return false;
         }
-        boolean esValido = PIN_VALIDO.equals(pin);
-        if (esValido) {
-            this.pinIngresado = pin;
-        }
-        return esValido;
+
+        usuarioAutenticado = atmService.autenticarPorPin(pin).orElse(null);
+        return usuarioAutenticado != null;
     }
 
     public boolean sesionActiva() {
-        return pinIngresado != null;
+        return usuarioAutenticado != null;
     }
 
     public void registrarMonto(Integer monto) {
@@ -46,8 +45,31 @@ public final class FlujoATM {
         return montoSeleccionado;
     }
 
+    public double obtenerSaldoActual() {
+        if (!sesionActiva()) {
+            throw new IllegalStateException("No hay una sesión activa.");
+        }
+        return atmService.consultarSaldo(usuarioAutenticado.getNumeroCuenta());
+    }
+
+    public void registrarConsultaSaldo() {
+        if (sesionActiva()) {
+            atmService.registrarConsultaSaldo(usuarioAutenticado.getNumeroCuenta());
+        }
+    }
+
+    public RetiroResultado retirarMontoSeleccionado() {
+        if (!sesionActiva()) {
+            return new RetiroResultado(false, "La sesión expiró. Inicie sesión nuevamente.", 0);
+        }
+        if (montoSeleccionado == null) {
+            return new RetiroResultado(false, "No se encontró un monto seleccionado.", obtenerSaldoActual());
+        }
+        return atmService.retirar(usuarioAutenticado.getNumeroCuenta(), montoSeleccionado);
+    }
+
     public void cerrarSesion() {
-        pinIngresado = null;
+        usuarioAutenticado = null;
         montoSeleccionado = null;
     }
 }

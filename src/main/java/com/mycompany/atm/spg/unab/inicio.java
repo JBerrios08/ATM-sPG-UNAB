@@ -50,7 +50,7 @@ public class inicio extends javax.swing.JFrame {
         boolean pinValido = FlujoATM.getInstance().validarPin(password.getPassword());
         if (!pinValido) {
             JOptionPane.showMessageDialog(this,
-                    "PIN inválido. Ingrese 4 dígitos numéricos (PIN de prueba: 1234).",
+                    "PIN inválido. Ingrese un PIN numérico de 4 dígitos.",
                     "Validación de PIN",
                     JOptionPane.WARNING_MESSAGE);
             password.setText("");
