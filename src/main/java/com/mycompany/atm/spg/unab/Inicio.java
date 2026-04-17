@@ -25,7 +25,7 @@ public class Inicio extends javax.swing.JFrame {
         PanelFondoResponsivo panel = new PanelFondoResponsivo("/imagenes/INICIO.png", 1920, 1080);
 
         javax.swing.JLabel titulo = UtilidadesUI.crearEtiquetaSuperpuesta(
-                UtilidadesUI.textoEnDosLineas("ESTIMADO USUARIO, INGRESE SU PIN", "Y PRESIONE CONTNUAR"),
+                UtilidadesUI.textoEnDosLineas("ESTIMADO USUARIO, INGRESE SU PIN", "Y PRESIONE CONTINUAR"),
                 24);
 
         javax.swing.JLabel integrantes = UtilidadesUI.crearEtiquetaSuperpuesta(
@@ -69,6 +69,11 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     public static void main(String[] args) {
+        configurarNimbus();
+        EventQueue.invokeLater(() -> new Inicio().setVisible(true));
+    }
+
+    private static void configurarNimbus() {
         try {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -79,6 +84,5 @@ public class Inicio extends javax.swing.JFrame {
         } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
             logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
-        EventQueue.invokeLater(() -> new Inicio().setVisible(true));
     }
 }
