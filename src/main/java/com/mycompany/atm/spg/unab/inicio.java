@@ -2,58 +2,61 @@ package com.mycompany.atm.spg.unab;
 
 import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.Font;
 import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPasswordField;
-import javax.swing.SwingConstants;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
-public class inicio extends JFrame {
+public class inicio extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(inicio.class.getName());
+
+    private JPasswordField password;
 
     public inicio() {
         initComponents();
     }
 
     private void initComponents() {
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Inicio");
+        UIHelper.configurarVentanaBase(this, "Inicio");
 
-        ResponsiveBackgroundPanel panel = new ResponsiveBackgroundPanel("/imagenes/INICIO.png", 1920, 1080);
+        PanelFondoResponsivo panel = new PanelFondoResponsivo("/imagenes/INICIO.png", 1920, 1080);
 
-        JLabel titulo = new JLabel("ESTIMADO USUARIO, PARA CONTINUAR INGRESE SU PIN Y PRESIONE: \"CONTINUAR\"");
-        titulo.setForeground(Color.WHITE);
-        titulo.setFont(new Font("Segoe UI Black", Font.BOLD, 24));
-        titulo.setHorizontalAlignment(SwingConstants.CENTER);
+        javax.swing.JLabel titulo = UIHelper.createOverlayLabel(
+                UIHelper.textoEnDosLineas("ESTIMADO USUARIO, PARA CONTINUAR INGRESE SU PIN", "Y PRESIONE: \"CONTINUAR\""),
+                24);
 
-        JPasswordField password = new JPasswordField();
+        password = new JPasswordField();
         password.setBackground(Color.WHITE);
         password.setForeground(new Color(60, 60, 60));
 
-        JButton btnContinuar = new JButton("CONTINUAR");
+        JButton btnContinuar = UIHelper.createTransparentButton("CONTINUAR", 22);
         btnContinuar.setBackground(Color.WHITE);
         btnContinuar.setForeground(Color.BLACK);
-        btnContinuar.setFont(new Font("Segoe UI Black", Font.BOLD, 18));
+        btnContinuar.setContentAreaFilled(true);
+        btnContinuar.setBorderPainted(true);
         btnContinuar.addActionListener(this::btncontinuarActionPerformed);
 
-        panel.add(titulo, new RelativeConstraints(0.23, 0.25, 0.56, 0.13));
-        panel.add(password, new RelativeConstraints(0.396, 0.519, 0.203, 0.056));
-        panel.add(btnContinuar, new RelativeConstraints(0.438, 0.778, 0.125, 0.083));
+        panel.add(titulo, new RestriccionesRelativas(0.20, 0.23, 0.60, 0.16));
+        panel.add(password, new RestriccionesRelativas(0.396, 0.519, 0.203, 0.056));
+        panel.add(btnContinuar, new RestriccionesRelativas(0.423, 0.778, 0.155, 0.083));
 
         setContentPane(panel);
-        setMinimumSize(new java.awt.Dimension(960, 540));
-        setPreferredSize(new java.awt.Dimension(1280, 720));
         pack();
         setLocationRelativeTo(null);
     }
 
     private void btncontinuarActionPerformed(java.awt.event.ActionEvent evt) {
-        continuar ventanaContinuar = new continuar();
-        ventanaContinuar.setVisible(true);
-        this.dispose();
+        boolean pinValido = FlujoATM.getInstance().validarPin(password.getPassword());
+        if (!pinValido) {
+            JOptionPane.showMessageDialog(this,
+                    "PIN inválido. Ingrese 4 dígitos numéricos (PIN de prueba: 1234).",
+                    "Validación de PIN",
+                    JOptionPane.WARNING_MESSAGE);
+            password.setText("");
+            return;
+        }
+        UIHelper.abrirVentana(this, continuar::new);
     }
 
     public static void main(String args[]) {

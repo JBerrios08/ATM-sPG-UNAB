@@ -14,24 +14,24 @@ import javax.swing.JPanel;
  * Panel que dibuja una imagen de fondo escalada con estrategia "cover"
  * y permite posicionar componentes en coordenadas relativas.
  */
-public class ResponsiveBackgroundPanel extends JPanel {
+public class PanelFondoResponsivo extends JPanel {
 
     private final Dimension designSize;
     private final Image backgroundImage;
 
-    public ResponsiveBackgroundPanel(String resourcePath, int designWidth, int designHeight) {
+    public PanelFondoResponsivo(String resourcePath, int designWidth, int designHeight) {
         this.designSize = new Dimension(designWidth, designHeight);
         URL resource = getClass().getResource(resourcePath);
         if (resource == null) {
             throw new IllegalArgumentException("No se encontró el recurso: " + resourcePath);
         }
         this.backgroundImage = new ImageIcon(resource).getImage();
-        setLayout(new RelativeOverlayLayout(designSize));
+        setLayout(new DisenoSuperpuestoRelativo(designSize));
         setOpaque(true);
     }
 
     public Rectangle getRenderBounds() {
-        return RelativeOverlayLayout.computeCoverBounds(getWidth(), getHeight(), designSize);
+        return DisenoSuperpuestoRelativo.computeCoverBounds(getWidth(), getHeight(), designSize);
     }
 
     @Override

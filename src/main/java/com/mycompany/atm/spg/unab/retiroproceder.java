@@ -1,15 +1,11 @@
 package com.mycompany.atm.spg.unab;
 
-import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.Font;
 import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
-public class retiroproceder extends JFrame {
+public class retiroproceder extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(retiroproceder.class.getName());
 
@@ -18,50 +14,51 @@ public class retiroproceder extends JFrame {
     }
 
     private void initComponents() {
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Confirmación de retiro");
+        UIHelper.configurarVentanaBase(this, "Confirmación de retiro");
 
-        ResponsiveBackgroundPanel panel = new ResponsiveBackgroundPanel("/imagenes/PROCEDERRETIRO.png", 1920, 1080);
+        PanelFondoResponsivo panel = new PanelFondoResponsivo("/imagenes/PROCEDERRETIRO.png", 1920, 1080);
 
-        JLabel titulo = new JLabel("¿ES CORRECTA LA CANTIDAD A RETIRAR?", SwingConstants.CENTER);
-        titulo.setForeground(Color.WHITE);
-        titulo.setFont(new Font("Segoe UI Black", Font.BOLD, 50));
+        javax.swing.JLabel titulo = UIHelper.createOverlayLabel(
+                UIHelper.textoEnDosLineas("¿ES CORRECTA LA CANTIDAD", "A RETIRAR?"),
+                48);
 
-        JButton btnNo = createTransparentButton("NO", 48);
+        JButton btnNo = UIHelper.createTransparentButton("NO", 48);
         btnNo.addActionListener(this::btnCantidadNoCorrectaActionPerformed);
 
-        JButton btnSi = createTransparentButton("SÍ", 48);
+        JButton btnSi = UIHelper.createTransparentButton("SÍ", 48);
         btnSi.addActionListener(this::btnCantidadSiCorrectaActionPerformed);
 
-        panel.add(titulo, new RelativeConstraints(0.224, 0.287, 0.552, 0.074));
-        panel.add(btnNo, new RelativeConstraints(0.083, 0.741, 0.078, 0.102));
-        panel.add(btnSi, new RelativeConstraints(0.849, 0.769, 0.078, 0.102));
+        panel.add(titulo, new RestriccionesRelativas(0.224, 0.270, 0.552, 0.105));
+        panel.add(btnNo, new RestriccionesRelativas(0.083, 0.741, 0.090, 0.102));
+        panel.add(btnSi, new RestriccionesRelativas(0.839, 0.769, 0.090, 0.102));
 
         setContentPane(panel);
-        setMinimumSize(new java.awt.Dimension(960, 540));
-        setPreferredSize(new java.awt.Dimension(1280, 720));
         pack();
         setLocationRelativeTo(null);
     }
 
-    private JButton createTransparentButton(String text, int fontSize) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("Segoe UI Black", Font.BOLD, fontSize));
-        button.setForeground(Color.WHITE);
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false);
-        button.setFocusPainted(false);
-        return button;
-    }
-
     private void btnCantidadNoCorrectaActionPerformed(java.awt.event.ActionEvent evt) {
-        cantidadaretirar ventanaCantidad = new cantidadaretirar();
-        ventanaCantidad.setVisible(true);
-        this.dispose();
+        UIHelper.abrirVentana(this, cantidadaretirar::new);
     }
 
     private void btnCantidadSiCorrectaActionPerformed(java.awt.event.ActionEvent evt) {
-        // Flujo futuro
+        Integer monto = FlujoATM.getInstance().getMontoSeleccionado();
+        if (monto == null) {
+            JOptionPane.showMessageDialog(this,
+                    "No se encontró un monto seleccionado. Vuelva a elegir una cantidad.",
+                    "Monto no definido",
+                    JOptionPane.WARNING_MESSAGE);
+            UIHelper.abrirVentana(this, cantidadaretirar::new);
+            return;
+        }
+
+        JOptionPane.showMessageDialog(this,
+                "Retiro exitoso. Ha retirado $" + monto + ".\nGracias por usar DIGIBANCK.",
+                "Transacción finalizada",
+                JOptionPane.INFORMATION_MESSAGE);
+
+        FlujoATM.getInstance().cerrarSesion();
+        UIHelper.abrirVentana(this, inicio::new);
     }
 
     public static void main(String args[]) {
