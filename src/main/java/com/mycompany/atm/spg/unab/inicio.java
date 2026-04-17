@@ -6,7 +6,7 @@ package com.mycompany.atm.spg.unab;
 
 /**
  *
- * @author Alex
+ * @author Alexis Castro | Jaime Berrios
  */
 public class inicio extends javax.swing.JFrame {
     
