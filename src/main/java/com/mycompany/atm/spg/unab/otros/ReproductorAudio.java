@@ -5,6 +5,7 @@ import java.io.InputStream;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineEvent;
 
 public final class ReproductorAudio {
 
@@ -35,10 +36,9 @@ public final class ReproductorAudio {
                  AudioInputStream audioStream = AudioSystem.getAudioInputStream(buffer)) {
                 Clip clip = AudioSystem.getClip();
                 clip.addLineListener(evento -> {
-                    switch (evento.getType()) {
-                        case STOP, CLOSE -> clip.close();
-                        default -> {
-                        }
+                    LineEvent.Type tipo = evento.getType();
+                    if (LineEvent.Type.STOP.equals(tipo) || LineEvent.Type.CLOSE.equals(tipo)) {
+                        clip.close();
                     }
                 });
                 clip.open(audioStream);
