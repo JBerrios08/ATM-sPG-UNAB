@@ -53,18 +53,20 @@ public class retiroproceder extends javax.swing.JFrame {
     }
 
     private void btnCantidadSiCorrectaActionPerformed(java.awt.event.ActionEvent evt) {
-        Integer monto = FlujoATM.getInstance().getMontoSeleccionado();
-        if (monto == null) {
+        RetiroResultado resultado = FlujoATM.getInstance().retirarMontoSeleccionado();
+        if (!resultado.exito()) {
             JOptionPane.showMessageDialog(this,
-                    "No se encontró un monto seleccionado. Vuelva a elegir una cantidad.",
-                    "Monto no definido",
+                    resultado.mensaje(),
+                    "No fue posible completar el retiro",
                     JOptionPane.WARNING_MESSAGE);
             UIHelper.abrirVentana(this, cantidadaretirar::new);
             return;
         }
 
+        Integer monto = FlujoATM.getInstance().getMontoSeleccionado();
         JOptionPane.showMessageDialog(this,
-                "Retiro exitoso. Ha retirado $" + monto + ".\nGracias por usar DIGIBANCK.",
+                String.format("Retiro exitoso. Ha retirado $%d.\nSaldo restante: $%.2f\nGracias por usar DIGIBANCK.",
+                        monto, resultado.saldoActual()),
                 "Transacción finalizada",
                 JOptionPane.INFORMATION_MESSAGE);
 
