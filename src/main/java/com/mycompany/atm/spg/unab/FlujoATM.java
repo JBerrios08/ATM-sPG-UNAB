@@ -8,7 +8,7 @@ public final class FlujoATM {
     private static final FlujoATM INSTANCE = new FlujoATM();
     private final ServicioATM servicioATM = new ServicioATM();
 
-    private Usuario usuarioAutenticado;
+    private ClienteATM clienteAutenticado;
     private Integer montoSeleccionado;
 
     private FlujoATM() {
@@ -26,12 +26,12 @@ public final class FlujoATM {
         if (!pin.matches("\\d{4}")) {
             return false;
         }
-        usuarioAutenticado = servicioATM.autenticarPorPin(pin).orElse(null);
-        return usuarioAutenticado != null;
+        clienteAutenticado = servicioATM.autenticarPorPin(pin).orElse(null);
+        return clienteAutenticado != null;
     }
 
     public boolean sesionActiva() {
-        return usuarioAutenticado != null;
+        return clienteAutenticado != null;
     }
 
     public void registrarMonto(Integer monto) {
@@ -44,12 +44,12 @@ public final class FlujoATM {
 
     public double obtenerSaldoActual() {
         validarSesion();
-        return servicioATM.consultarSaldo(usuarioAutenticado.getNumeroCuenta());
+        return servicioATM.consultarSaldo(clienteAutenticado.getCuenta().getNumCuenta());
     }
 
     public void registrarConsultaSaldo() {
         if (sesionActiva()) {
-            servicioATM.registrarConsultaSaldo(usuarioAutenticado.getNumeroCuenta());
+            servicioATM.registrarConsultaSaldo(clienteAutenticado.getCuenta().getNumCuenta());
         }
     }
 
@@ -60,18 +60,18 @@ public final class FlujoATM {
         if (montoSeleccionado == null) {
             return new ResultadoRetiro(false, "No hay monto seleccionado.", obtenerSaldoActual());
         }
-        return servicioATM.retirar(usuarioAutenticado.getNumeroCuenta(), montoSeleccionado);
+        return servicioATM.retirar(clienteAutenticado.getCuenta().getNumCuenta(), montoSeleccionado);
     }
 
-    public List<TransaccionRegistro> obtenerHistorial() {
+    public List<HistorialTransacciones> obtenerHistorial() {
         if (!sesionActiva()) {
             return Collections.emptyList();
         }
-        return servicioATM.consultarHistorial(usuarioAutenticado.getNumeroCuenta());
+        return servicioATM.consultarHistorial(clienteAutenticado.getCuenta().getNumCuenta());
     }
 
     public void cerrarSesion() {
-        usuarioAutenticado = null;
+        clienteAutenticado = null;
         montoSeleccionado = null;
     }
 
